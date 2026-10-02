@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>TransferDesk</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TransferDesk">
+<meta name="theme-color" content="#0f172a">
+<style>
+:root{
+  --bg:#f4f6fa;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --accent:#2563eb;--accent-d:#1d4ed8;--green:#059669;--red:#dc2626;--amber:#d97706;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none;
+  -webkit-tap-highlight-color:transparent;
+}
+[hidden]{display:none!important}
+#authScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px 16px;background:linear-gradient(160deg,#0f172a,#1e293b);
+}
+.auth-card{
+  background:#fff;border-radius:18px;width:100%;max-width:420px;padding:28px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+}
+.auth-brand{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
+.auth-brand span{color:var(--accent)}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.auth-tabs{display:flex;gap:2px;background:#eef2f7;padding:3px;border-radius:10px;margin-bottom:20px}
+.auth-tabs button{
+  flex:1;border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:600;
+  color:#475569;padding:8px 6px;border-radius:8px;cursor:pointer;transition:.15s;
+}
+.auth-tabs button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+.afield{margin-bottom:14px}
+.afield label{
+  display:block;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;
+}
+.afield input{
+  width:100%;font:inherit;font-size:16px;padding:11px 13px;border:1px solid var(--line);
+  border-radius:10px;background:#fff;transition:.15s;
+}
+.afield input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+.afield .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.auth-msg{
+  font-size:12.5px;padding:10px 12px;border-radius:9px;margin-bottom:14px;
+  background:#fef2f2;color:#991b1b;border:1px solid #fecaca;
+}
+.auth-msg.ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+.auth-submit{
+  width:100%;font:inherit;font-size:14px;font-weight:700;padding:12px;border:0;
+  border-radius:10px;background:var(--accent);color:#fff;cursor:pointer;transition:.15s;
+}
+.auth-submit:hover{background:var(--accent-d)}
+.auth-submit:disabled{opacity:.55;cursor:not-allowed}
+.auth-foot{font-size:12px;color:var(--muted);text-align:center;margin-top:16px}
+header{
+  background:#0f172a;color:#fff;padding:calc(10px + env(safe-area-inset-top)) 20px 10px;
+  display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:50;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);flex-wrap:wrap;
+}
+.brand{font-weight:700;font-size:16px;letter-spacing:-.2px;white-space:nowrap}
+.brand span{color:#60a5fa}
+nav{display:flex;gap:3px;flex:1;overflow-x:auto}
+nav button{
+  background:transparent;border:0;color:#cbd5e1;font:inherit;font-weight:600;
+  padding:8px 13px;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap;
+}
+nav button:hover{background:#1e293b;color:#fff}
+nav button.active{background:#1e293b;color:#fff}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.status-dot{
+  display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#94a3b8;font-weight:600;
+}
+.status-dot i{
+  width:7px;height:7px;border-radius:50%;background:#22c55e;display:block;transition:.3s;
+}
+.status-dot.off i{background:#f59e0b}
+.status-dot.sync i{background:#3b82f6;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.user-pill{
+  display:flex;align-items:center;gap:8px;background:#1e293b;border-radius:999px;
+  padding:5px 12px 5px 5px;cursor:pointer;border:0;font:inherit;color:#fff;
+}
+.user-pill:hover{background:#334155}
+.user-avatar{
+  width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-size:11px;font-weight:800;text-transform:uppercase;
+}
+.user-name{font-size:12.5px;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+main{max-width:1220px;margin:0 auto;padding:22px 20px calc(60px + env(safe-area-inset-bottom))}
+.page{display:none}
+.page.active{display:block}
+h2.section{font-size:15px;font-weight:700;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mt{margin-top:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.kpi.green::after{background:var(--green)}
+.kpi.amber::after{background:var(--amber)}
+.kpi.red::after{background:var(--red)}
+.kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.kpi .val{font-size:25px;font-weight:800;letter-spacing:-.7px;margin-top:4px}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.seg{display:inline-flex;background:#e8edf5;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{
+  border:0;background:transparent;font:inherit;font-weight:600;font-size:12.5px;
+  color:#475569;padding:6px 12px;border-radius:8px;cursor:pointer;transition:.15s;
+}
+.seg button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+.btn{
+  font:inherit;font-weight:600;font-size:13px;border-radius:9px;cursor:pointer;
+  padding:8px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);
+  transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.btn:hover{background:#f8fafc;border-color:#cbd5e1}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-d);border-color:var(--accent-d)}
+.btn.danger{color:var(--red);border-color:#fecaca}
+.btn.danger:hover{background:#fef2f2}
+.btn.sm{padding:5px 10px;font-size:12px}
+.chart{display:flex;gap:14px;height:190px;padding-top:6px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0}
+.bar-val{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;height:14px}
+.bar-track{flex:1;width:100%;max-width:70px;display:flex;align-items:flex-end;background:#f1f5f9;border-radius:7px;overflow:hidden}
+.bar-fill{width:100%;background:linear-gradient(180deg,#60a5fa,#2563eb);border-radius:7px;transition:height .45s cubic-bezier(.4,0,.2,1)}
+.bar-label{font-size:11px;color:var(--muted);font-weight:600;margin-top:6px}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:940px}
+thead th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+  font-weight:700;padding:11px 14px;background:#f8fafc;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+tbody td{padding:11px 14px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#f8fafc}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.strong{font-weight:700}.muted{color:var(--muted)}.small{font-size:12px}
+.route{font-weight:600;white-space:nowrap}
+.sub-line{font-size:11.5px;color:var(--muted);margin-top:1px}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge.paid{background:#d1fae5;color:#065f46}
+.badge.partial{background:#fef3c7;color:#92400e}
+.badge.unpaid{background:#fee2e2;color:#991b1b}
+.badge.transfer{background:#dbeafe;color:#1e40af}
+.badge.tour{background:#ede9fe;color:#5b21b6}
+.badge.owner{background:#fef3c7;color:#92400e}
+.badge.driver{background:#e0e7ff;color:#3730a3}
+.row-actions{display:flex;gap:5px;justify-content:flex-end}
+.icon-btn{
+  border:1px solid var(--line);background:#fff;border-radius:7px;cursor:pointer;
+  width:28px;height:28px;display:grid;place-items:center;font-size:13px;color:var(--muted);transition:.15s;
+}
+.icon-btn:hover{background:#f1f5f9;color:var(--ink)}
+.icon-btn.del:hover{background:#fef2f2;color:var(--red);border-color:#fecaca}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+input[type=text],input[type=date],input[type=time],input[type=number],input[type=tel],
+input[type=email],input[type=password],select,textarea{
+  font:inherit;font-size:13px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;
+  background:#fff;color:var(--ink);width:100%;transition:.15s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+.search{flex:1;min-width:190px;max-width:340px}
+.toolbar select{width:auto;min-width:130px}
+.empty{padding:46px 20px;text-align:center;color:var(--muted)}
+.empty .big{font-size:34px;margin-bottom:8px;opacity:.5}
+.empty p{font-size:13px}
+.overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:24px 16px calc(24px + env(safe-area-inset-bottom));z-index:100;overflow-y:auto;
+}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:660px;box-shadow:0 24px 60px rgba(15,23,42,.28);animation:pop .18s ease-out}
+@keyframes pop{from{transform:translateY(-10px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:16px;font-weight:700}
+.modal-body{padding:20px 22px}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.form-sep{grid-column:1/-1;border-top:1px dashed var(--line);margin:4px 0}
+.hint{font-size:11.5px;color:var(--muted);margin-top:2px}
+.money-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;grid-column:1/-1}
+.calc-box{
+  grid-column:1/-1;background:#f0f7ff;border:1px solid #dbeafe;border-radius:10px;
+  padding:11px 14px;display:flex;gap:22px;flex-wrap:wrap;font-size:13px;
+}
+.calc-box b{font-variant-numeric:tabular-nums}
+.invite-box{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  background:#0f172a;color:#fff;border-radius:12px;padding:16px 18px;
+}
+.invite-code{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:22px;font-weight:800;
+  letter-spacing:.15em;color:#60a5fa;
+}
+.invite-box .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;font-weight:700}
+.team-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #f1f5f9}
+.team-row:last-child{border-bottom:0}
+.team-avatar{
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  font-size:13px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.data-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.data-grid .card h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.data-grid .card p{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.stat-line{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.stat-line:last-child{border-bottom:0}
+.stat-line span:last-child{font-weight:700;font-variant-numeric:tabular-nums}
+.toast{
+  position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;
+  transform:translateX(-50%) translateY(80px);background:#0f172a;color:#fff;
+  padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);opacity:0;transition:.28s cubic-bezier(.4,0,.2,1);
+  z-index:200;pointer-events:none;max-width:90vw;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media (max-width:640px){
+  header{gap:10px;padding:calc(8px + env(safe-area-inset-top)) 14px 8px}
+  nav{order:3;width:100%}
+  main{padding:16px 13px calc(50px + env(safe-area-inset-bottom))}
+  .form-grid{grid-template-columns:1fr}
+  .money-row{grid-template-columns:1fr 1fr}
+  .kpi .val{font-size:21px}
+  .chart{gap:7px}
+  input,select,textarea{font-size:16px}
+  .user-name{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-brand">✈️ Transfer<span>Desk</span></div>
+    <div class="auth-sub">Airport transfers &amp; tour earnings — synced across your team</div>
+    <div class="auth-tabs">
+      <button data-authtab="login" class="active">Sign in</button>
+      <button data-authtab="signup">New business</button>
+      <button data-authtab="join">Join team</button>
+    </div>
+    <div id="authMsg" class="auth-msg" hidden></div>
+    <form id="authForm">
+      <div data-authpanel="login">
+        <div class="afield">
+          <label for="li_email">Email</label>
+          <input type="email" id="li_email" autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="afield">
+          <label for="li_pass">Password</label>
+          <input type="password" id="li_pass" autocomplete="current-password" placeholder="••••••••">
+        </div>
+      </div>
+      <div data-authpanel="signup" hidden>
+        <div class="afield">
+          <label for="su_name">Your name</label>
+          <input type="text" id="su_name" autocomplete="name" placeholder="e.g. Thabo M.">
+        </div>
+        <div class="afield">
+          <label for="su_biz">Business name</label>
+          <input type="text" id="su_biz" placeholder="e.g. Skyline Transfers">
+        </div>
+        <div class="afield">
+          <label for="su_email">Email</label>
+          <input type="email" id="su_email" autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="afield">
+          <label for="su_pass">Password</label>
+          <input type="password" id="su_pass" autocomplete="new-password" placeholder="At least 6 characters">
+          <div class="hint">You'll be the business owner and get a shareable invite code.</div>
+        </div>
+      </div>
+      <div data-authpanel="join" hidden>
+        <div class="afield">
+          <label for="jo_name">Your name</label>
+          <input type="text" id="jo_name" autocomplete="name" placeholder="e.g. Sipho K.">
+        </div>
+        <div class="afield">
+          <label for="jo_code">Invite code</label>
+          <input type="text" id="jo_code" placeholder="e.g. a3f9k2p1" autocapitalize="none" autocorrect="off">
+          <div class="hint">Ask your business owner for this.</div>
+        </div>
+        <div class="afield">
+          <label for="jo_email">Email</label>
+          <input type="email" id="jo_email" autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="afield">
+          <label for="jo_pass">Password</label>
+          <input type="password" id="jo_pass" autocomplete="new-password" placeholder="At least 6 characters">
+        </div>
+      </div>
+      <button type="submit" class="auth-submit" id="authSubmit">Sign in</button>
+    </form>
+    <div class="auth-foot">Your data is private to your business.</div>
+  </div>
+</div>
+
+<div id="appScreen" hidden>
+<header>
+  <div class="brand">✈️ Transfer<span>Desk</span></div>
+  <nav>
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="jobs">Jobs</button>
+    <button data-tab="team" data-owner-only hidden>Team</button>
+    <button data-tab="data">Data</button>
+  </nav>
+  <div class="hdr-right">
+    <span class="status-dot" id="syncDot" title="Sync status"><i></i><span id="syncText">Synced</span></span>
+    <button class="user-pill" id="userPill">
+      <span class="user-avatar" id="userAvatar">?</span>
+      <span class="user-name" id="userName">…</span>
+    </button>
+    <button class="btn sm" id="btnNew">+ Job</button>
+  </div>
+</header>
+<main>
+  <section class="page active" id="page-dashboard">
+    <div class="row-between" style="margin-bottom:16px">
+      <h2 class="section" style="margin:0">Earnings Overview</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div class="seg" id="scopeSeg" hidden>
+          <button data-scope="mine" class="active">My jobs</button>
+          <button data-scope="team">Whole team</button>
+        </div>
+        <div class="seg" id="rangeSeg">
+          <button data-range="today">Today</button>
+          <button data-range="week">Week</button>
+          <button data-range="month" class="active">Month</button>
+          <button data-range="year">Year</button>
+          <button data-range="all">All</button>
+        </div>
+      </div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="card mt">
+      <h2 class="section" style="margin-bottom:6px">Net Profit — Last 6 Months</h2>
+      <div class="chart" id="chart"></div>
+    </div>
+    <div class="card mt">
+      <div class="row-between" style="margin-bottom:12px">
+        <h2 class="section" style="margin:0">Upcoming Jobs</h2>
+        <button class="btn sm" data-goto="jobs">View all →</button>
+      </div>
+      <div id="upcoming"></div>
+    </div>
+  </section>
+  <section class="page" id="page-jobs">
+    <div class="toolbar">
+      <input type="text" class="search" id="search" placeholder="Search client, route, flight, notes…">
+      <select id="filterType">
+        <option value="all">All types</option>
+        <option value="transfer">Transfers</option>
+        <option value="tour">Tours</option>
+      </select>
+      <select id="filterStatus">
+        <option value="all">All statuses</option>
+        <option value="paid">Paid</option>
+        <option value="partial">Partial</option>
+        <option value="unpaid">Unpaid</option>
+      </select>
+      <select id="filterDriver" hidden></select>
+      <select id="sortBy">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="net-desc">Highest net</option>
+        <option value="net-asc">Lowest net</option>
+        <option value="client-asc">Client A–Z</option>
+      </select>
+      <button class="btn" id="btnExportCsv2">⬇ CSV</button>
+    </div>
+    <div id="jobsMeta" class="small muted" style="margin-bottom:9px"></div>
+    <div id="jobsTableWrap"></div>
+  </section>
+  <section class="page" id="page-team">
+    <h2 class="section">Your Team</h2>
+    <div class="invite-box">
+      <div style="flex:1;min-width:200px">
+        <div class="lbl">Invite code — share with your drivers</div>
+        <div class="invite-code" id="inviteCode">--------</div>
+      </div>
+      <button class="btn primary" id="btnCopyInvite">📋 Copy code</button>
+    </div>
+    <div class="card mt">
+      <h2 class="section">Drivers &amp; Earnings</h2>
+      <div id="teamList"></div>
+    </div>
+    <div class="card mt">
+      <h2 class="section">Business Settings</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="t_bizName">Business name</label>
+          <input type="text" id="t_bizName">
+        </div>
+        <div class="field">
+          <label for="t_currency">Currency symbol</label>
+          <input type="text" id="t_currency" maxlength="4">
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn primary" id="btnSaveBiz">Save settings</button>
+      </div>
+    </div>
+  </section>
+  <section class="page" id="page-data">
+    <h2 class="section">Data &amp; Account</h2>
+    <div class="data-grid">
+      <div class="card">
+        <h4>Your Account</h4>
+        <p>Signed in as <b id="acctEmail">—</b></p>
+        <div class="stat-line"><span>Business</span><span id="acctBiz">—</span></div>
+        <div class="stat-line"><span>Role</span><span id="acctRole">—</span></div>
+        <div class="stat-line"><span>Jobs synced</span><span id="acctJobs">0</span></div>
+        <div style="margin-top:14px">
+          <button class="btn danger" id="btnSignOut">Sign out</button>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Sync Status</h4>
+        <p>Data saves locally first, then syncs to the cloud.</p>
+        <div class="stat-line"><span>Connection</span><span id="syncConn">—</span></div>
+        <div class="stat-line"><span>Pending uploads</span><span id="syncPending">0</span></div>
+        <div class="stat-line"><span>Last sync</span><span id="syncLast">—</span></div>
+        <div style="margin-top:14px">
+          <button class="btn" id="btnForceSync">🔄 Sync now</button>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Export Spreadsheet</h4>
+        <p>Download all jobs you can see as a CSV file.</p>
+        <button class="btn" id="btnExportCsv">⬇ Export (CSV)</button>
+      </div>
+      <div class="card">
+        <h4>Backup JSON</h4>
+        <p>A full JSON snapshot — useful for archiving or moving data.</p>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <button class="btn primary" id="btnExportJson">⬇ Export backup</button>
+          <button class="btn" id="btnImportJson">⬆ Restore backup</button>
+          <input type="file" id="fileImport" accept=".json,application/json" hidden>
+        </div>
+      </div>
+      <div class="card">
+        <h4>Danger Zone</h4>
+        <p>Permanently delete every job you own. Team members' jobs are untouched.</p>
+        <button class="btn danger" id="btnWipe">Delete my jobs</button>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">New Job</h3>
+      <button class="icon-btn" id="btnClose" title="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="jobForm" autocomplete="off">
+        <div class="form-grid">
+          <div class="field"><label for="f_date">Date *</label><input type="date" id="f_date" required></div>
+          <div class="field"><label for="f_time">Pickup time</label><input type="time" id="f_time"></div>
+          <div class="field">
+            <label for="f_type">Service type</label>
+            <select id="f_type">
+              <option value="transfer">Airport Transfer</option>
+              <option value="tour">Tour / Day Trip</option>
+            </select>
+          </div>
+          <div class="field"><label for="f_vehicle">Vehicle</label><input type="text" id="f_vehicle" placeholder="e.g. Mercedes V-Class"></div>
+          <div class="field"><label for="f_client">Client name</label><input type="text" id="f_client" placeholder="e.g. J. Smith"></div>
+          <div class="field"><label for="f_phone">Phone / WhatsApp</label><input type="tel" id="f_phone" placeholder="+27 82 000 0000"></div>
+          <div class="field"><label for="f_pickup">Pickup location</label><input type="text" id="f_pickup" placeholder="e.g. OR Tambo — Arrivals"></div>
+          <div class="field"><label for="f_dropoff">Drop-off location</label><input type="text" id="f_dropoff" placeholder="e.g. Sandton Hilton"></div>
+          <div class="field"><label for="f_flight">Flight number</label><input type="text" id="f_flight" placeholder="e.g. BA055"></div>
+          <div class="field"><label for="f_pax">Passengers</label><input type="number" id="f_pax" min="1" step="1" placeholder="2"></div>
+          <div class="form-sep"></div>
+          <div class="money-row">
+            <div class="field"><label for="f_price">Price charged</label><input type="number" id="f_price" min="0" step="0.01" placeholder="0.00"></div>
+            <div class="field">
+              <label for="f_costs">Costs / expenses</label>
+              <input type="number" id="f_costs" min="0" step="0.01" placeholder="0.00">
+              <div class="hint">Fuel, tolls, parking</div>
+            </div>
+            <div class="field">
+              <label for="f_received">Amount received</label>
+              <input type="number" id="f_received" min="0" step="0.01" placeholder="0.00">
+              <div class="hint">0 = unpaid</div>
+            </div>
+          </div>
+          <div class="calc-box" id="calcBox"></div>
+          <div class="field full">
+            <label for="f_notes">Notes</label>
+            <textarea id="f_notes" rows="2" placeholder="Flight delayed, meet &amp; greet, luggage…"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="btnMarkPaid" type="button">Mark paid</button>
+      <button class="btn" id="btnCancel" type="button">Cancel</button>
+      <button class="btn primary" id="btnSave" type="button">Save job</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+/* ============================================================
+   ⬇️  PASTE YOUR SUPABASE CREDENTIALS HERE  ⬇️
+   ============================================================ */
+const SUPABASE_URL  = 'PASTE_YOUR_PROJECT_URL_HERE';   // ⬅️ PASTE HERE
+const SUPABASE_ANON = 'PASTE_YOUR_ANON_KEY_HERE';      // ⬅️ PASTE HERE
+/* ============================================================ */
+
+if (SUPABASE_URL.includes('PASTE_YOUR')) {
+  alert('Please open index.html and paste your Supabase URL and anon key.');
+}
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
+const state = {
+  user: null,
+  profile: null,
+  business: null,
+  jobs: [],
+  pendingDeletes: [],
+  online: navigator.onLine,
+  lastSync: null,
+  syncing: false
+};
+
+const ui = {
+  tab: 'dashboard',
+  range: 'month',
+  scope: 'mine',
+  search: '',
+  type: 'all',
+  status: 'all',
+  driver: 'all',
+  sort: 'date-desc'
+};
+
+let editingId = null;
+const LS_JOBS = 'transferdesk.jobs.v2';
+const LS_DELS = 'transferdesk.dels.v2';
+
+const $ = id => document.getElementById(id);
+
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function todayStr(){return ymd(new Date());}
+function num(v){const n=parseFloat(v);return isFinite(n)?n:0;}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+function money(n){
+  const v=num(n);
+  const cur = state.business?.currency || '$';
+  const sign = v<0?'-':'';
+  const abs = Math.abs(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return sign+cur+abs;
+}
+function moneyShort(n){
+  const v=num(n),a=Math.abs(v);
+  const cur = state.business?.currency || '$';
+  const sign = v<0?'-':'';
+  if(a>=1000000) return sign+cur+(a/1000000).toFixed(1)+'M';
+  if(a>=1000) return sign+cur+(a/1000).toFixed(1)+'k';
+  return sign+cur+Math.round(a);
+}
+function startOfWeek(d){const x=new Date(d);const day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x;}
+function inRange(ds,range){
+  if(!ds) return false;
+  if(range==='all') return true;
+  const now=new Date();
+  if(range==='today') return ds===ymd(now);
+  if(range==='week'){const s=startOfWeek(now);const e=new Date(s);e.setDate(e.getDate()+6);return ds>=ymd(s)&&ds<=ymd(e);}
+  if(range==='month') return ds.slice(0,7)===ymd(now).slice(0,7);
+  if(range==='year') return ds.slice(0,4)===ymd(now).slice(0,4);
+  return true;
+}
+function statusOf(j){
+  const p=num(j.price),r=num(j.received);
+  if(p<=0) return r>0?'partial':'unpaid';
+  if(r>=p-0.001) return 'paid';
+  if(r>0) return 'partial';
+  return 'unpaid';
+}
+function netOf(j){return num(j.price)-num(j.costs);}
+function balanceOf(j){return num(j.price)-num(j.received);}
+function fmtDate(d){
+  if(!d) return '—';
+  const dt=new Date(d+'T00:00:00');
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'});
+}
+function initials(name){
+  if(!name) return '?';
+  return name.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+function colorFor(id){
+  const colors=['#2563eb','#059669','#d97706','#7c3aed','#db2777','#0891b2','#ca8a04','#dc2626'];
+  let h=0; for(const c of String(id||'')) h=(h*31+c.charCodeAt(0))>>>0;
+  return colors[h%colors.length];
+}
+function toast(msg){
+  const t=$('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+function statusBadge(j){
+  const s=statusOf(j);
+  const txt=s==='paid'?'Paid':s==='partial'?'Partial':'Unpaid';
+  return `<span class="badge ${s}">${txt}</span>`;
+}
+
+function saveLocal(){
+  try{
+    localStorage.setItem(LS_JOBS, JSON.stringify(state.jobs));
+    localStorage.setItem(LS_DELS, JSON.stringify(state.pendingDeletes));
+  }catch(e){ console.warn('localStorage full',e); }
+}
+function loadLocal(){
+  try{
+    const j=localStorage.getItem(LS_JOBS);
+    const d=localStorage.getItem(LS_DELS);
+    state.jobs = j?JSON.parse(j):[];
+    state.pendingDeletes = d?JSON.parse(d):[];
+  }catch(e){
+    state.jobs=[]; state.pendingDeletes=[];
+  }
+}
+function clearLocal(){
+  localStorage.removeItem(LS_JOBS);
+  localStorage.removeItem(LS_DELS);
+}
+
+let authTab = 'login';
+document.querySelectorAll('[data-authtab]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    authTab = btn.dataset.authtab;
+    document.querySelectorAll('[data-authtab]').forEach(b=>b.classList.toggle('active',b===btn));
+    document.querySelectorAll('[data-authpanel]').forEach(p=>p.hidden = p.dataset.authpanel!==authTab);
+    $('authSubmit').textContent = authTab==='login'?'Sign in':authTab==='signup'?'Create business':'Join team';
+    hideAuthMsg();
+  });
+});
+function showAuthMsg(msg, ok=false){
+  const el=$('authMsg');
+  el.textContent=msg;
+  el.className='auth-msg'+(ok?' ok':'');
+  el.hidden=false;
+}
+function hideAuthMsg(){ $('authMsg').hidden=true; }
+
+$('authForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  hideAuthMsg();
+  const btn=$('authSubmit');
+  btn.disabled=true;
+  const orig=btn.textContent;
+  try{
+    if(authTab==='login'){
+      btn.textContent='Signing in…';
+      const email=$('li_email').value.trim();
+      const pass=$('li_pass').value;
+      if(!email||!pass) throw new Error('Enter email and password');
+      const { data, error } = await sb.auth.signInWithPassword({email,password:pass});
+      if(error) throw error;
+      await afterAuth(data.user);
+    }
+    else if(authTab==='signup'){
+      btn.textContent='Creating business…';
+      const name=$('su_name').value.trim();
+      const biz=$('su_biz').value.trim();
+      const email=$('su_email').value.trim();
+      const pass=$('su_pass').value;
+      if(!name||!biz||!email||!pass) throw new Error('Fill in every field');
+      if(pass.length<6) throw new Error('Password must be at least 6 characters');
+      const { data, error } = await sb.auth.signUp({email,password:pass});
+      if(error) throw error;
+      if(!data.session) throw new Error('Sign-up succeeded but no session. Enable "Confirm email = OFF" in Supabase Auth settings.');
+      const { error: rpcErr } = await sb.rpc('create_business',{biz_name:biz,my_name:name});
+      if(rpcErr) throw rpcErr;
+      await afterAuth(data.user);
+    }
+    else {
+      btn.textContent='Joining…';
+      const name=$('jo_name').value.trim();
+      const code=$('jo_code').value.trim();
+      const email=$('jo_email').value.trim();
+      const pass=$('jo_pass').value;
+      if(!name||!code||!email||!pass) throw new Error('Fill in every field');
+      if(pass.length<6) throw new Error('Password must be at least 6 characters');
+      const { data, error } = await sb.auth.signUp({email,password:pass});
+      if(error) throw error;
+      if(!data.session) throw new Error('Sign-up succeeded but no session. Enable "Confirm email = OFF" in Supabase Auth settings.');
+      const { error: rpcErr } = await sb.rpc('join_business',{code,my_name:name});
+      if(rpcErr) throw rpcErr;
+      await afterAuth(data.user);
+    }
+  }catch(err){
+    console.error(err);
+    showAuthMsg(err.message || 'Something went wrong. Please try again.');
+  }finally{
+    btn.disabled=false;
+    btn.textContent=orig;
+  }
+});
+
+async function afterAuth(user){
+  if(!user){ showAuthMsg('No user returned from sign-in.'); return; }
+  state.user = user;
+  const { data: prof, error: pErr } = await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+  if(pErr) console.warn(pErr);
+  if(!prof){
+    await sb.auth.signOut();
+    state.user=null;
+    showAuthMsg('No profile found. If you just signed up, try "New business" or "Join team".');
+    return;
+  }
+  state.profile = prof;
+  const { data: biz, error: bErr } = await sb.from('businesses').select('*').eq('id',prof.business_id).maybeSingle();
+  if(bErr||!biz){
+    await sb.auth.signOut();
+    state.user=null;
+    showAuthMsg('Could not load your business. Contact your owner.');
+    return;
+  }
+  state.business = biz;
+  enterApp();
+}
+
+async function enterApp(){
+  $('authScreen').hidden = true;
+  $('appScreen').hidden = false;
+  document.body.style.background = 'var(--bg)';
+  $('userAvatar').textContent = initials(state.profile.full_name);
+  $('userAvatar').style.background = colorFor(state.profile.id);
+  $('userName').textContent = state.profile.full_name || 'User';
+  const isOwner = state.profile.role === 'owner';
+  document.querySelectorAll('[data-owner-only]').forEach(el=> el.hidden = !isOwner);
+  $('scopeSeg').hidden = !isOwner;
+  $('filterDriver').hidden = !isOwner;
+  if(isOwner){
+    $('inviteCode').textContent = state.business.invite_code;
+    $('t_bizName').value = state.business.name;
+    $('t_currency').value = state.business.currency || '$';
+  }
+  loadLocal();
+  render();
+  await refreshFromServer();
+  subscribeRealtime();
+  flush();
+}
+
+$('userPill').addEventListener('click', async ()=>{
+  if(!confirm('Sign out of TransferDesk?')) return;
+  await sb.auth.signOut();
+  state.user=null; state.profile=null; state.business=null;
+  state.jobs=[]; state.pendingDeletes=[];
+  clearLocal();
+  $('appScreen').hidden=true;
+  $('authScreen').hidden=false;
+  document.body.style.background='';
+  window.scrollTo(0,0);
+});
+$('btnSignOut').addEventListener('click', ()=>{ $('userPill').click(); });
+
+function setSyncStatus(kind, text){
+  const dot = $('syncDot');
+  dot.className = 'status-dot ' + kind;
+  $('syncText').textContent = text;
+}
+function updateSyncInfo(){
+  $('syncConn').textContent = state.online ? 'Online' : 'Offline';
+  const pending = state.jobs.filter(j=>j._sync!=='synced').length + state.pendingDeletes.length;
+  $('syncPending').textContent = pending;
+  $('syncLast').textContent = state.lastSync
+    ? new Date(state.lastSync).toLocaleTimeString()
+    : '—';
+}
+
+async function flush(){
+  if(!state.online || !state.user || state.syncing) return;
+  state.syncing = true;
+  setSyncStatus('sync','Syncing…');
+  try{
+    if(state.pendingDeletes.length){
+      const ids = state.pendingDeletes.slice();
+      const { error } = await sb.from('jobs').delete().in('id', ids);
+      if(error) throw error;
+      state.pendingDeletes = state.pendingDeletes.filter(id=>!ids.includes(id));
+    }
+    const dirty = state.jobs.filter(j=>j._sync!=='synced');
+    if(dirty.length){
+      const rows = dirty.map(j=>{
+        const { _sync, ...rest } = j;
+        return {
+          ...rest,
+          business_id: state.business.id,
+          user_id: state.user.id,
+          updated_at: new Date().toISOString()
+        };
+      });
+      const { error } = await sb.from('jobs').upsert(rows);
+      if(error) throw error;
+      dirty.forEach(j=>{ j._sync='synced'; });
+    }
+    saveLocal();
+    state.lastSync = Date.now();
+    updateSyncInfo();
+    setSyncStatus('', 'Synced');
+    await refreshFromServer(true);
+  }catch(err){
+    console.warn('Sync failed', err);
+    setSyncStatus('off','Will retry');
+    updateSyncInfo();
+  }finally{
+    state.syncing = false;
+  }
+}
+
+async function refreshFromServer(silent=false){
+  if(!state.user || !state.online) return;
+  try{
+    const { data, error } = await sb.from('jobs').select('*').order('date',{ascending:false});
+    if(error) throw error;
+    const pending = new Map();
+    state.jobs.forEach(j=>{ if(j._sync!=='synced') pending.set(j.id, j); });
+    const fresh = (data||[]).map(j=> ({ ...j, _sync:'synced' }));
+    const merged = fresh.map(j=> pending.get(j.id) || j);
+    pending.forEach((j,id)=>{ if(!merged.find(m=>m.id===id)) merged.push(j); });
+    state.jobs = merged;
+    state.lastSync = Date.now();
+    saveLocal();
+    render();
+    updateSyncInfo();
+    if(!silent) setSyncStatus('', 'Synced');
+  }catch(err){
+    console.warn('Refresh failed', err);
+    if(!silent) setSyncStatus('off','Offline');
+  }
+}
+
+let rtChannel = null;
+function subscribeRealtime(){
+  if(rtChannel) sb.removeChannel(rtChannel);
+  rtChannel = sb.channel('jobs-live')
+    .on('postgres_changes',
+      { event:'*', schema:'public', table:'jobs', filter:`business_id=eq.${state.business.id}` },
+      () => {
+        clearTimeout(subscribeRealtime._t);
+        subscribeRealtime._t = setTimeout(()=> refreshFromServer(true), 350);
+      })
+    .subscribe();
+}
+
+window.addEventListener('online', ()=>{ state.online=true; setSyncStatus('','Online'); flush(); updateSyncInfo(); });
+window.addEventListener('offline',()=>{ state.online=false; setSyncStatus('off','Offline'); updateSyncInfo(); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && state.online) flush(); });
+setInterval(()=>{ if(state.online && state.user) flush(); }, 30000);
+
+function jobsVisibleToMe(){
+  if(state.profile.role === 'driver') return state.jobs;
+  if(ui.scope === 'mine') return state.jobs.filter(j=> j.user_id === state.user.id);
+  return state.jobs;
+}
+
+function render(){
+  if(!state.profile) return;
+  if(ui.tab==='dashboard') renderDashboard();
+  else if(ui.tab==='jobs') renderJobs();
+  else if(ui.tab==='team') renderTeam();
+  else if(ui.tab==='data') renderData();
+  updateSyncInfo();
+}
+
+function renderDashboard(){
+  const jobs = jobsVisibleToMe().filter(j=> inRange(j.date, ui.range));
+  const gross = jobs.reduce((s,j)=>s+num(j.price),0);
+  const costs = jobs.reduce((s,j)=>s+num(j.costs),0);
+  const net = gross-costs;
+  const received = jobs.reduce((s,j)=>s+num(j.received),0);
+  const outstanding = jobs.reduce((s,j)=>s+Math.max(0,balanceOf(j)),0);
+  const label = { today:'today', week:'this week', month:'this month', year:'this year', all:'all time' }[ui.range];
+  const scopeLabel = (state.profile.role==='owner' && ui.scope==='team') ? 'team' : 'your';
+  $('kpis').innerHTML = `
+    <div class="kpi green">
+      <div class="lbl">Net Profit</div>
+      <div class="val">${money(net)}</div>
+      <div class="sub">${jobs.length} job${jobs.length===1?'':'s'} · ${scopeLabel} ${label}</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Gross Revenue</div>
+      <div class="val">${money(gross)}</div>
+      <div class="sub">Total charged</div>
+    </div>
+    <div class="kpi amber">
+      <div class="lbl">Expenses</div>
+      <div class="val">${money(costs)}</div>
+      <div class="sub">Fuel · tolls · commission</div>
+    </div>
+    <div class="kpi red">
+      <div class="lbl">Outstanding</div>
+      <div class="val">${money(outstanding)}</div>
+      <div class="sub">${money(received)} collected</div>
+    </div>
+  `;
+  renderChart();
+  renderUpcoming();
+}
+
+function monthlySeries(n){
+  const out=[]; const now=new Date();
+  const base = jobsVisibleToMe();
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const list = base.filter(j=> String(j.date||'').slice(0,7)===key);
+    out.push({ label:d.toLocaleString(undefined,{month:'short'}), net:list.reduce((s,j)=>s+netOf(j),0), count:list.length });
+  }
+  return out;
+}
+
+function renderChart(){
+  const series = monthlySeries(6);
+  const max = Math.max(...series.map(s=>Math.abs(s.net)),1);
+  $('chart').innerHTML = series.map(s=>{
+    const h = Math.max(2, Math.round((Math.abs(s.net)/max)*100));
+    return `<div class="bar-col" title="${esc(s.label)}: ${money(s.net)} · ${s.count} job(s)">
+      <div class="bar-val">${s.net ? esc(moneyShort(s.net)) : ''}</div>
+      <div class="bar-track"><div class="bar-fill" style="height:${h}%"></div></div>
+      <div class="bar-label">${esc(s.label)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderUpcoming(){
+  const today = todayStr();
+  const list = jobsVisibleToMe()
+    .filter(j=> j.date>=today)
+    .sort((a,b)=> (a.date+(a.time||'')).localeCompare(b.date+(b.time||'')))
+    .slice(0,6);
+  const el=$('upcoming');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="big">🗓️</div><p>No upcoming jobs scheduled.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="table-wrap"><table style="min-width:720px">
+    <thead><tr><th>Date</th><th>Client</th><th>Type</th><th>Route</th><th class="num">Net</th><th>Status</th></tr></thead>
+    <tbody>${list.map(j=>`
+      <tr data-open="${j.id}" style="cursor:pointer">
+        <td><div class="strong">${esc(fmtDate(j.date))}</div><div class="sub-line">${esc(j.time||'—')}</div></td>
+        <td>${esc(j.client||'—')}</td>
+        <td><span class="badge ${j.type}">${j.type==='tour'?'Tour':'Transfer'}</span></td>
+        <td><div class="route">${esc(j.pickup||'—')} → ${esc(j.dropoff||'—')}</div>
+        ${j.flight?`<div class="sub-line">Flight ${esc(j.flight)}</div>`:''}</td>
+        <td class="num strong">${money(netOf(j))}</td>
+        <td>${statusBadge(j)}</td>
+      </tr>`).join('')}</tbody></table></div>`;
+}
+
+function getFilteredJobs(){
+  let list = jobsVisibleToMe();
+  if(ui.search){
+    const q=ui.search.toLowerCase();
+    list = list.filter(j=> [j.client,j.pickup,j.dropoff,j.flight,j.notes,j.vehicle,j.phone]
+      .some(v=> String(v||'').toLowerCase().includes(q)));
+  }
+  if(ui.type!=='all') list = list.filter(j=> j.type===ui.type);
+  if(ui.status!=='all') list = list.filter(j=> statusOf(j)===ui.status);
+  if(state.profile.role==='owner' && ui.driver!=='all') list = list.filter(j=> j.user_id===ui.driver);
+  const sorters = {
+    'date-desc':(a,b)=> (b.date+(b.time||'')).localeCompare(a.date+(a.time||'')),
+    'date-asc':(a,b)=> (a.date+(a.time||'')).localeCompare(b.date+(b.time||'')),
+    'net-desc':(a,b)=> netOf(b)-netOf(a),
+    'net-asc':(a,b)=> netOf(a)-netOf(b),
+    'client-asc':(a,b)=> String(a.client||'').localeCompare(String(b.client||''))
+  };
+  list.sort(sorters[ui.sort]||sorters['date-desc']);
+  return list;
+}
+
+function renderJobs(){
+  const list = getFilteredJobs();
+  const wrap = $('jobsTableWrap');
+  const totalNet = list.reduce((s,j)=>s+netOf(j),0);
+  const totalBal = list.reduce((s,j)=>s+Math.max(0,balanceOf(j)),0);
+  $('jobsMeta').innerHTML = list.length
+    ? `Showing <b>${list.length}</b> job${list.length===1?'':'s'} · Net <b>${money(totalNet)}</b> · Outstanding <b>${money(totalBal)}</b>`
+    : '';
+  if(!list.length){
+    wrap.innerHTML = `<div class="card empty">
+      <div class="big">📋</div>
+      <p>${state.jobs.length ? 'No jobs match your filters.' : 'No jobs yet. Tap <b>+ Job</b> to add your first one.'}</p>
+    </div>`;
+    return;
+  }
+  const showDriver = state.profile.role==='owner' && ui.scope==='team';
+  const driverName = id => {
+    const p = teamMap().get(id);
+    return p ? p.full_name : '—';
+  };
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr>
+      ${showDriver?'<th>Driver</th>':''}
+      <th>Date</th><th>Client</th><th>Type</th><th>Route / Details</th>
+      <th class="num">Price</th><th class="num">Costs</th><th class="num">Net</th>
+      <th class="num">Balance</th><th>Status</th><th></th>
+    </tr></thead>
+    <tbody>${list.map(j=>{
+      const bal = balanceOf(j);
+      const pending = j._sync !== 'synced';
+      return `<tr style="${pending?'opacity:.7':''}">
+        ${showDriver?`<td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="team-avatar" style="width:26px;height:26px;font-size:10px;background:${colorFor(j.user_id)}">${esc(initials(driverName(j.user_id)))}</span>
+            <span class="small">${esc(driverName(j.user_id))}</span>
+          </div>
+        </td>`:''}
+        <td><div class="strong">${esc(fmtDate(j.date))}</div><div class="sub-line">${esc(j.time||'—')}</div></td>
+        <td><div class="strong">${esc(j.client||'—')}</div>${j.phone?`<div class="sub-line">${esc(j.phone)}</div>`:''}</td>
+        <td><span class="badge ${j.type}">${j.type==='tour'?'Tour':'Transfer'}</span></td>
+        <td>
+          <div class="route">${esc(j.pickup||'—')} → ${esc(j.dropoff||'—')}</div>
+          <div class="sub-line">${j.flight?'✈ '+esc(j.flight)+' · ':''}${j.pax?esc(j.pax)+' pax · ':''}${esc(j.vehicle||'')}</div>
+        </td>
+        <td class="num">${money(j.price)}</td>
+        <td class="num muted">${money(j.costs)}</td>
+        <td class="num strong">${money(netOf(j))}${pending?' <span style="color:#f59e0b">•</span>':''}</td>
+        <td class="num ${bal>0.001?'strong':'muted'}">${money(Math.max(0,bal))}</td>
+        <td>${statusBadge(j)}</td>
+        <td><div class="row-actions">
+          ${j.user_id===state.user.id?`
+            <button class="icon-btn" data-action="dup" data-id="${j.id}" title="Duplicate">⧉</button>
+            <button class="icon-btn" data-action="edit" data-id="${j.id}" title="Edit">✎</button>
+            <button class="icon-btn del" data-action="del" data-id="${j.id}" title="Delete">🗑</button>
+          `:'<span class="muted small">view only</span>'}
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+let _teamMap = null;
+function teamMap(){
+  if(!_teamMap) _teamMap = new Map();
+  return _teamMap;
+}
+async function loadTeamProfiles(){
+  if(state.profile.role!=='owner') return;
+  const { data, error } = await sb.from('profiles').select('*').eq('business_id', state.business.id);
+  if(error){ console.warn(error); return; }
+  _teamMap = new Map((data||[]).map(p=>[p.id,p]));
+  renderTeam();
+  renderJobs();
+}
+
+function renderTeam(){
+  if(state.profile.role!=='owner') return;
+  $('inviteCode').textContent = state.business.invite_code;
+  const list = $('teamList');
+  const team = Array.from(teamMap().values());
+  if(!team.length){
+    list.innerHTML = `<div class="empty"><div class="big">👥</div><p>No team members yet. Share the invite code above.</p></div>`;
+    return;
+  }
+  list.innerHTML = team
+    .map(p=>{
+      const mine = state.jobs.filter(j=> j.user_id===p.id);
+      const net = mine.reduce((s,j)=>s+netOf(j),0);
+      const bal = mine.reduce((s,j)=>s+Math.max(0,balanceOf(j)),0);
+      return `<div class="team-row">
+        <span class="team-avatar" style="background:${colorFor(p.id)}">${esc(initials(p.full_name))}</span>
+        <div style="flex:1;min-width:0">
+          <div class="strong">${esc(p.full_name||'Unnamed')} <span class="badge ${p.role}">${p.role}</span></div>
+          <div class="sub-line">${mine.length} job${mine.length===1?'':'s'} · Outstanding ${money(bal)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="strong">${money(net)}</div>
+          <div class="sub-line">net earnings</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function renderData(){
+  $('acctEmail').textContent = state.user.email || '—';
+  $('acctBiz').textContent = state.business.name;
+  $('acctRole').textContent = state.profile.role;
+  $('acctJobs').textContent = state.jobs.length;
+  updateSyncInfo();
+}
+
+const overlay = $('overlay');
+const F = id => document.getElementById(id);
+
+function openModal(id){
+  editingId = id || null;
+  const j = id ? state.jobs.find(x=>x.id===id) : null;
+  $('modalTitle').textContent = j ? 'Edit Job' : 'New Job';
+  F('f_date').value = j ? j.date : todayStr();
+  F('f_time').value = j ? (j.time||'') : '';
+  F('f_type').value = j ? (j.type||'transfer') : 'transfer';
+  F('f_vehicle').value = j ? (j.vehicle||'') : '';
+  F('f_client').value = j ? (j.client||'') : '';
+  F('f_phone').value = j ? (j.phone||'') : '';
+  F('f_pickup').value = j ? (j.pickup||'') : '';
+  F('f_dropoff').value = j ? (j.dropoff||'') : '';
+  F('f_flight').value = j ? (j.flight||'') : '';
+  F('f_pax').value = j ? (j.pax||'') : '';
+  F('f_price').value = j ? (j.price||'') : '';
+  F('f_costs').value = j ? (j.costs||'') : '';
+  F('f_received').value = j ? (j.received||'') : '';
+  F('f_notes').value = j ? (j.notes||'') : '';
+  updateCalc();
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=> F('f_client').focus(), 60);
+}
+function closeModal(){
+  overlay.classList.remove('open');
+  document.body.style.overflow='';
+  editingId=null;
+}
+function updateCalc(){
+  const price=num(F('f_price').value);
+  const costs=num(F('f_costs').value);
+  const rec=num(F('f_received').value);
+  const net=price-costs, bal=Math.max(0,price-rec);
+  F('calcBox').innerHTML = `
+    <div>Net profit: <b>${money(net)}</b></div>
+    <div>Client balance: <b>${money(bal)}</b></div>
+    <div>Status: <b>${price>0 && rec>=price-0.001 ? 'Paid' : rec>0 ? 'Partial':'Unpaid'}</b></div>
+  `;
+}
+['f_price','f_costs','f_received'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target && e.target.id===id) updateCalc(); });
+});
+
+function saveJob(){
+  const date = F('f_date').value;
+  if(!date){ toast('⚠️ Please pick a date'); F('f_date').focus(); return; }
+  const data = {
+    date,
+    time: F('f_time').value,
+    type: F('f_type').value,
+    vehicle: F('f_vehicle').value.trim(),
+    client: F('f_client').value.trim(),
+    phone: F('f_phone').value.trim(),
+    pickup: F('f_pickup').value.trim(),
+    dropoff: F('f_dropoff').value.trim(),
+    flight: F('f_flight').value.trim(),
+    pax: F('f_pax').value ? parseInt(F('f_pax').value,10) : null,
+    price: num(F('f_price').value),
+    costs: num(F('f_costs').value),
+    received: num(F('f_received').value),
+    notes: F('f_notes').value.trim()
+  };
+  if(editingId){
+    const idx = state.jobs.findIndex(x=>x.id===editingId);
+    if(idx>-1){ state.jobs[idx] = { ...state.jobs[idx], ...data, _sync:'pending' }; }
+    toast('✓ Job updated');
+  } else {
+    const id = crypto.randomUUID();
+    state.jobs.push({
+      id,
+      user_id: state.user.id,
+      business_id: state.business.id,
+      ...data,
+      _sync: 'pending'
+    });
+    toast('✓ Job saved');
+  }
+  saveLocal();
+  closeModal();
+  render();
+  flush();
+}
+
+const CSV_FIELDS = ['date','time','type','client','phone','pickup','dropoff','flight','pax','vehicle','price','costs','received','notes'];
+function csvCell(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
+function exportCSV(){
+  const list = jobsVisibleToMe();
+  if(!list.length){ toast('Nothing to export'); return; }
+  const header = CSV_FIELDS.map(f=>csvCell(f[0].toUpperCase()+f.slice(1))).join(',');
+  const rows = list.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))
+    .map(j=> CSV_FIELDS.map(f=>csvCell(j[f])).join(','));
+  download([header,...rows].join('\r\n'), `transferdesk-${todayStr()}.csv`, 'text/csv;charset=utf-8');
+  toast('⬇ CSV exported');
+}
+function exportJSON(){
+  const payload = {
+    app:'TransferDesk', version:2, exportedAt:new Date().toISOString(),
+    business: state.business, profile: state.profile,
+    jobs: jobsVisibleToMe()
+  };
+  download(JSON.stringify(payload,null,2), `transferdesk-backup-${todayStr()}.json`, 'application/json');
+  toast('⬇ Backup exported');
+}
+function download(content, filename, mime){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function importJSON(file){
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      const incoming = Array.isArray(data) ? data : (data.jobs || []);
+      if(!incoming.length){ toast('⚠️ No jobs found in file'); return; }
+      if(!confirm(`Import ${incoming.length} job(s) as YOUR jobs?\n\nOK = add to your records\nCancel = abort`)) return;
+      incoming.forEach(j=>{
+        state.jobs.push({
+          id: crypto.randomUUID(),
+          user_id: state.user.id,
+          business_id: state.business.id,
+          date: j.date || todayStr(),
+          time: j.time || '',
+          type: j.type === 'tour' ? 'tour' : 'transfer',
+          vehicle: j.vehicle || '',
+          client: j.client || '',
+          phone: j.phone || '',
+          pickup: j.pickup || '',
+          dropoff: j.dropoff || '',
+          flight: j.flight || '',
+          pax: j.pax || null,
+          price: num(j.price),
+          costs: num(j.costs),
+          received: num(j.received),
+          notes: j.notes || '',
+          _sync: 'pending'
+        });
+      });
+      saveLocal(); render(); flush();
+      toast('✓ Imported');
+    }catch(err){
+      toast('⚠️ Invalid file');
+      console.warn(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    ui.tab = b.dataset.tab;
+    document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));
+    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+ui.tab));
+    if(ui.tab==='team' && state.profile?.role==='owner') loadTeamProfiles();
+    render();
+  });
+});
+document.querySelectorAll('[data-goto]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const tab = b.dataset.goto;
+    document.querySelector(`nav button[data-tab="${tab}"]`)?.click();
+  });
+});
+$('rangeSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-range]');
+  if(!btn) return;
+  ui.range = btn.dataset.range;
+  document.querySelectorAll('#rangeSeg button').forEach(b=>b.classList.toggle('active',b===btn));
+  renderDashboard();
+});
+$('scopeSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-scope]');
+  if(!btn) return;
+  ui.scope = btn.dataset.scope;
+  document.querySelectorAll('#scopeSeg button').forEach(b=>b.classList.toggle('active',b===btn));
+  render();
+});
+$('btnNew').addEventListener('click', ()=>openModal(null));
+$('btnClose').addEventListener('click', closeModal);
+$('btnCancel').addEventListener('click', closeModal);
+$('btnSave').addEventListener('click', saveJob);
+$('btnMarkPaid').addEventListener('click', ()=>{ F('f_received').value=num(F('f_price').value); updateCalc(); toast('Marked as paid'); });
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && overlay.classList.contains('open')) closeModal();
+  if(e.key==='Enter' && (e.metaKey||e.ctrlKey) && overlay.classList.contains('open')) saveJob();
+});
+document.addEventListener('click', e=>{
+  const actBtn = e.target.closest('[data-action]');
+  if(actBtn){
+    const { action, id } = actBtn.dataset;
+    const j = state.jobs.find(x=>x.id===id);
+    if(!j) return;
+    if(action==='edit') openModal(id);
+    if(action==='dup'){
+      state.jobs.push({
+        ...j, id: crypto.randomUUID(),
+        date: todayStr(), received: 0,
+        created_at: new Date().toISOString(),
+        _sync:'pending'
+      });
+      saveLocal(); render(); flush();
+      toast('⧉ Duplicated');
+    }
+    if(action==='del'){
+      if(confirm(`Delete this job?\n\n${fmtDate(j.date)} · ${j.client||'No client'}`)){
+        state.jobs = state.jobs.filter(x=>x.id!==id);
+        if(j._sync==='synced') state.pendingDeletes.push(id);
+        saveLocal(); render(); flush();
+        toast('🗑 Deleted');
+      }
+    }
+    return;
+  }
+  const row = e.target.closest('[data-open]');
+  if(row) openModal(row.dataset.open);
+});
+$('search').addEventListener('input', e=>{ ui.search=e.target.value.trim(); renderJobs(); });
+$('filterType').addEventListener('change', e=>{ ui.type=e.target.value; renderJobs(); });
+$('filterStatus').addEventListener('change', e=>{ ui.status=e.target.value; renderJobs(); });
+$('sortBy').addEventListener('change', e=>{ ui.sort=e.target.value; renderJobs(); });
+$('filterDriver').addEventListener('change', e=>{ ui.driver=e.target.value; renderJobs(); });
+$('btnCopyInvite').addEventListener('click', async ()=>{
+  const code = state.business.invite_code;
+  try{
+    await navigator.clipboard.writeText(code);
+    toast('📋 Code copied');
+  }catch(e){
+    prompt('Copy this code:', code);
+  }
+});
+$('btnSaveBiz').addEventListener('click', async ()=>{
+  const name = $('t_bizName').value.trim();
+  const currency = $('t_currency').value.trim() || '$';
+  if(!name) return toast('Enter a business name');
+  const { error } = await sb.from('businesses').update({name, currency}).eq('id', state.business.id);
+  if(error){ toast('⚠️ '+error.message); return; }
+  state.business.name = name;
+  state.business.currency = currency;
+  toast('✓ Business updated');
+  render();
+});
+$('btnExportCsv').addEventListener('click', exportCSV);
+$('btnExportCsv2').addEventListener('click', exportCSV);
+$('btnExportJson').addEventListener('click', exportJSON);
+$('btnImportJson').addEventListener('click', ()=>$('fileImport').click());
+$('fileImport').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(f) importJSON(f); e.target.value='';
+});
+$('btnForceSync').addEventListener('click', ()=>{ toast('🔄 Syncing…'); flush(); });
+$('btnWipe').addEventListener('click', async ()=>{
+  const mine = state.jobs.filter(j=> j.user_id===state.user.id);
+  if(!mine.length) return toast('You have no jobs to delete');
+  if(!confirm(`Delete ALL ${mine.length} of your jobs permanently?\n\nThis removes them from the cloud too.`)) return;
+  if(!confirm('Really sure? Cannot be undone.')) return;
+  state.jobs = state.jobs.filter(j=> j.user_id!==state.user.id);
+  const remoteIds = mine.filter(j=> j._sync==='synced').map(j=>j.id);
+  if(remoteIds.length){
+    const { error } = await sb.from('jobs').delete().in('id', remoteIds);
+    if(error) toast('⚠️ '+error.message);
+  }
+  saveLocal(); render();
+  toast('All your jobs deleted');
+});
+
+(async ()=>{
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session?.user){
+    state.user = session.user;
+    const { data: prof } = await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
+    if(prof){
+      state.profile = prof;
+      const { data: biz } = await sb.from('businesses').select('*').eq('id',prof.business_id).maybeSingle();
+      if(biz){ state.business = biz; await enterApp(); }
+    }
+  }
+})();
+
+if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
+</script>
+</body>
+</html>
